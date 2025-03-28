@@ -237,7 +237,7 @@ ui <- dashboardPage(
                   p(strong("Random Forest Model"), " is useed in the 'Model Plots' section to predict the popularity of a song based on its audio features. The model was trained on 80% of the data and tested on the remaining 20%. The model's performance is evaluated using RMSE and R². The model's feature importance is also visualized."),
                   tags$hr(),
                   h4("Contact / Source Code"),
-                  p("For questions or feedback, please contact: d000854242@dkit.ie"),
+                  p("For questions or feedback, please contact: d00242480@student.dkit.ie"),
                   p("The source code for this Shiny application can be found on GitHub:",
                     tags$a(href = "https://github.com/mehrdat/visualization_final_project", target = "_blank", "[https://github.com/mehrdat/visualization_final_project]"))
                 )
