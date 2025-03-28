@@ -7,6 +7,7 @@ library(ggplot2)
 library(randomForest)
 library(plotly)
 library(lubridate)
+library(corrplot)
 library(heatmaply)
 library(DT)
 library(readr) 
@@ -555,8 +556,7 @@ server <- function(input, output, session) {
     train_data$set<-"train"
     test_data$set<-"test"
     
-    #dim(train_data)
-    #dim(test_data)
+
     combined_data<-rbind(train_data,test_data)#%>%sample_frac(.1)
     #combined_data$set <- factor(combined_data$set, levels = c("train", "test"))
     
@@ -571,12 +571,12 @@ server <- function(input, output, session) {
 ############## Importance Plot ####################
   output$featureImportancePlot <- renderPlot({
     
-    # Extract feature importance
+
     importance_df <- as.data.frame(varImp(rf_model)) # Mean decrease in accuracy
     colnames(importance_df) <- c("Importance")
     importance_df$Feature <- rownames(importance_df)
     
-    # Sort by importance
+
     importance_df <- importance_df %>%
       arrange(desc(Importance))
     
@@ -590,11 +590,11 @@ server <- function(input, output, session) {
   output$predActualPlot<-renderPlot({
     test_data$pred <- predict(rf_model, newdata = test_data)
     rmse_val<-round(rmse(test_data$popularity, test_data$pred), 2)
-      r2_val<-round(cor(test_data$popularity, test_data$pred)^2, 3)
-      
+    r2_val<-round(cor(test_data$popularity, test_data$pred)^2, 3)
+
     ggplot(test_data, aes(x = popularity, y = pred)) +
       geom_point(alpha = 0.5, color = "darkblue") +
-      geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") + # Perfect prediction line
+      geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
       labs(
         title = paste("Actual vs. Predicted Popularity (RMSE:", rmse_val, ", R²:", r2_val, ")"),
         x = "Actual Popularity",
