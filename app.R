@@ -349,51 +349,6 @@ server <- function(input, output, session) {
       )
   })
         
-  #   top_artists <- spotify_data %>%
-  #     group_by(artists) %>%
-  #     summarise(
-  #       count = n(),
-  #       avg_popularity = mean(popularity, na.rm = TRUE) 
-  #     ) %>%
-  #     arrange(desc(count)) %>%
-  #     top_n(7, count)
-  #   
-  #   blue_colorscale <- list(
-  #     c(0, "rgb(239, 243, 255)"),  # Light blue
-  #     c(1, "rgb(8, 81, 156)")     # Dark blue
-  #   )
-  #   plot_ly(top_artists, 
-  #           x = ~count, 
-  #           y = ~reorder(artists, count), 
-  #           type = 'bar',
-  #           orientation = "h",
-  #           marker = list(
-  #             color = ~avg_popularity, 
-  #             colorscale = blue_colorscale, 
-  #             showscale = TRUE 
-  #           )) %>%
-  #     layout(
-  #       title = "Top 7 Artists by Count",
-  #       xaxis = list(title = "Count"),
-  #       yaxis = list(
-  #         title = "Artist",
-  #         tickangle = -45,
-  #         automargin = TRUE 
-  #       ),
-  #       
-  #       colorbar = list(
-  #         title = list(
-  #           text = "Popularity",
-  #           side = "right",
-  #           font = list(size = 14) 
-  #         ),
-  #         len = 0.1,  
-  #         thickness = 4 
-  #       ),
-  #       margin = list(l = 10, b = 10,r=5) 
-  #     )
-  # })
-
   output$popularityByCountries <- renderPlotly({
 
     country_summary <- spotify_data %>%
