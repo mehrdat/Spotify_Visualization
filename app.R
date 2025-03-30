@@ -429,7 +429,6 @@ server <- function(input, output, session) {
         legend.box = "horizontal"
       )
     
-    #ggplotly(p, tooltip = "customdata") %>%
     ggplotly(p, tooltip = "text") %>%
       style(
         hoverlabel = list(
@@ -444,7 +443,6 @@ server <- function(input, output, session) {
       ) %>%
       config(displayModeBar = TRUE)
   })
-  
   
 ################### Interactive Plot ###################
   
@@ -464,14 +462,12 @@ server <- function(input, output, session) {
         avg_value = mean(get(input$variableSelect), na.rm = TRUE),
         .groups = 'drop'
       )
-
     
     filtered <- filtered %>%
       mutate(
         year = floor_date(as.Date(album_release_date), unit = "year") 
       )
-    
-    #full_plot <- 
+
       ggplot(filtered, aes(x = year, y = avg_value)) +
       geom_line(color = "#4E79A7", size = 1) + 
       geom_point(color = "#4E79A7", size = 2, stroke = 1, shape = 21, fill = "#4E79A7") +
@@ -592,8 +588,7 @@ server <- function(input, output, session) {
     test_data$set<-"test"
     
 
-    combined_data<-rbind(train_data,test_data)#%>%sample_frac(.1)
-    #combined_data$set <- factor(combined_data$set, levels = c("train", "test"))
+    combined_data<-rbind(train_data,test_data)
     
     ggplot(combined_data,aes(x=energy,y=popularity,color=set))+
       geom_point(alpha = 0.3, size = 2) +
