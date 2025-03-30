@@ -17,6 +17,7 @@ library(caret)
 library(leaflet)
 library(maps)
 library(tools)
+library(ggbiplot)
 
 country_codes_df <- data.frame(
   code = c(
@@ -34,7 +35,7 @@ country_codes_df <- data.frame(
     "DO", "GT", "HN", "SV", "NI", "CR", "PA", "JM", "TT", "GY",
     "EC", "BO", "PY", "UY", "SR", "BB"
   ),
-  name = c(
+  country_name =c(
     "United States", "Canada", "United Kingdom", "Germany", "France", "Australia", "Japan", "Brazil", "Mexico", "India",
     "Russia", "China", "South Africa", "Nigeria", "Egypt", "Indonesia", "Pakistan", "Bangladesh", "Turkey", "Iran",
     "Spain", "Italy", "South Korea", "Saudi Arabia", "Argentina", "Colombia", "Poland", "Ukraine", "Morocco", "Kenya",
@@ -51,12 +52,13 @@ country_codes_df <- data.frame(
   )
 )
 
-spotify_data <- read_csv("/Users/Mehr/Desktop/data/spotify_01.csv") %>%
+spotify_data_raw <- read_csv("/Users/Mehr/Desktop/data/spotify_01.csv") %>%
   slice_sample(prop = .1)%>%
   na.omit() %>%
   mutate(is_explicit = as.factor(is_explicit),
          country = as.factor(country),
-         release_year=year(as.Date(album_release_date)))%>%
+         release_year=year(as.Date(album_release_date)))
+spotify_data<-spotify_data_raw%>%
   select(-c(tempo,snapshot_date,weekly_movement,daily_movement,daily_rank,spotify_id,name, key, mode, time_signature))
 
 
@@ -106,7 +108,7 @@ ui <- dashboardPage(
                 box(
                   title = "Top 7 Artists by Number of Songs", status = "primary", solidHeader = TRUE,
                   collapsible = TRUE, width = 6,
-                  plotlyOutput("topArtistsPlot")
+                  plotOutput("topArtistsPlot")
                 ),
                 box(
                   title = "Countries by Popular Songs", status = "primary", solidHeader = TRUE,
@@ -141,9 +143,29 @@ ui <- dashboardPage(
               fluidRow(
                 box(
                   title = "Correlation Between Variables", status = "primary", solidHeader = TRUE,
-                  collapsible = TRUE, width = 12,
+                  collapsible = TRUE, width = 6,
                   plotOutput("corrPlot")
                 ),
+                box(
+                  title = "Principal Component Analysis: Principals", status = "primary", solidHeader = TRUE,
+                  collapsible = TRUE, width = 6,
+                  plotOutput("pcaPlot")
+                )
+                
+                ),
+                fluidRow(
+                  
+                  box(
+                    title = "Representation of Variable on Principal Components: Cosine^2", status = "primary", solidHeader = TRUE,
+                    collapsible = TRUE, width = 6,
+                    plotOutput("fvizPlot")
+                  ),
+                  box(
+                    title = "Correlation of PCs and Variables", status = "primary", solidHeader = TRUE,
+                    collapsible = TRUE, width = 6,
+                    plotOutput("pcaCorr")
+                  )
+                
 
               )
       ),
@@ -154,7 +176,7 @@ ui <- dashboardPage(
                 box(
                   title = "Table Filters",
                   selectInput("countryFilter", "Filter by Country:",
-                              choices = c("All", levels(spotify_data$country))),
+                              choices = c("All", unique(country_codes_df$country_name))),
                   sliderInput("popularityFilter", "Popularity Range:",
                               min = 0, max = 100, value = c(0, 100)), width = 12)
               ),
@@ -248,9 +270,23 @@ ui <- dashboardPage(
   )
 )
 
-#####################  Server Logic #################
+#####################  Server function #################
 
 server <- function(input, output, session) {
+  
+  pca_df <- spotify_data %>%
+    select(danceability, energy, loudness, valence, popularity, speechiness, duration_ms, liveness) %>%
+    na.omit()
+  
+  #pca_df <- scale(pca_df)
+  pca_df <- prcomp(pca_df, scale = TRUE)
+  
+  var=get_pca_var(pca_df)
+  var$coord
+  var$contrib
+  varcos<-var$cos2
+  var$cor
+  
 
   output$totalSongsBox <- renderValueBox({
     total_songs <- nrow(spotify_data)
@@ -267,16 +303,14 @@ server <- function(input, output, session) {
       summarise(avg_popularity=mean(popularity,na.rm=TRUE),total_songs = n(),)%>%
       arrange(desc(avg_popularity))%>%
       head(1)
-  
-    
+
     valueBox( "Album",
               paste0(toTitleCase(pop_album$album_name), " is the most popular album by ",  toTitleCase(pop_album$artists)), icon = icon("star"),
       color = "yellow"
     )
   })
-  
+
   output$topArtistBox <- renderValueBox({
-    
     
       top_artist_data <- spotify_data %>%
         count(artists, sort = TRUE) %>%
@@ -289,55 +323,77 @@ server <- function(input, output, session) {
     )
   })
 
-  output$topArtistsPlot <- renderPlotly({
+  output$topArtistsPlot <- renderPlot({
     
     top_artists <- spotify_data %>%
       group_by(artists) %>%
-      summarise(
-        count = n(),
-        avg_popularity = mean(popularity, na.rm = TRUE) 
+      summarise(count = n(),avg_popularity = mean(popularity, na.rm = TRUE)
       ) %>%
       arrange(desc(count)) %>%
       top_n(7, count)
     
-    blue_colorscale <- list(
-      c(0, "rgb(239, 243, 255)"),  # Light blue
-      c(1, "rgb(8, 81, 156)")     # Dark blue
-    )
-    plot_ly(top_artists, 
-            x = ~count, 
-            y = ~reorder(artists, count), 
-            type = 'bar',
-            orientation = "h",
-            marker = list(
-              color = ~avg_popularity, 
-              colorscale = blue_colorscale, 
-              showscale = TRUE 
-            )) %>%
-      layout(
+    ggplot(top_artists, aes(x = count, y = reorder(artists, count), fill = avg_popularity)) +
+      geom_bar(stat = "identity", show.legend = TRUE) +
+      scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Popularity") +
+      labs(
         title = "Top 7 Artists by Count",
-        xaxis = list(title = "Count"),
-        yaxis = list(
-          title = "Artist",
-          tickangle = -45,
-          automargin = TRUE 
-        ),
-        
-        colorbar = list(
-          title = list(
-            text = "Popularity",
-            side = "right",
-            font = list(size = 14) 
-          ),
-          len = 0.1,  
-          thickness = 4 
-        ),
-        margin = list(l = 10, b = 10,r=5) 
+        x = "Count",
+        y = "Artist"
+      ) +
+      theme_minimal() +
+      theme(
+        axis.text.y = element_text(angle = -45, hjust = 0.5),
+        plot.title = element_text(size = 14, hjust = 0.5),
+        legend.title = element_text(size = 12),
+        legend.key.size = unit(0.5, "cm")
       )
   })
- 
-  
-  
+        
+  #   top_artists <- spotify_data %>%
+  #     group_by(artists) %>%
+  #     summarise(
+  #       count = n(),
+  #       avg_popularity = mean(popularity, na.rm = TRUE) 
+  #     ) %>%
+  #     arrange(desc(count)) %>%
+  #     top_n(7, count)
+  #   
+  #   blue_colorscale <- list(
+  #     c(0, "rgb(239, 243, 255)"),  # Light blue
+  #     c(1, "rgb(8, 81, 156)")     # Dark blue
+  #   )
+  #   plot_ly(top_artists, 
+  #           x = ~count, 
+  #           y = ~reorder(artists, count), 
+  #           type = 'bar',
+  #           orientation = "h",
+  #           marker = list(
+  #             color = ~avg_popularity, 
+  #             colorscale = blue_colorscale, 
+  #             showscale = TRUE 
+  #           )) %>%
+  #     layout(
+  #       title = "Top 7 Artists by Count",
+  #       xaxis = list(title = "Count"),
+  #       yaxis = list(
+  #         title = "Artist",
+  #         tickangle = -45,
+  #         automargin = TRUE 
+  #       ),
+  #       
+  #       colorbar = list(
+  #         title = list(
+  #           text = "Popularity",
+  #           side = "right",
+  #           font = list(size = 14) 
+  #         ),
+  #         len = 0.1,  
+  #         thickness = 4 
+  #       ),
+  #       margin = list(l = 10, b = 10,r=5) 
+  #     )
+  # })
+
   output$popularityByCountries <- renderPlotly({
 
     country_summary <- spotify_data %>%
@@ -347,7 +403,8 @@ server <- function(input, output, session) {
         song_count = n(),
         .groups = 'drop'
       ) %>%
-      left_join(country_codes_df, by = c("country" = "code")) %>%
+      left_join(country_codes_df, by = c("country" = "code"),relationship = "many-to-many") %>%
+      rename(name = country_name) %>%  
       filter(song_count >= 100) %>%  #
       mutate(
         name = case_when(
@@ -394,7 +451,8 @@ server <- function(input, output, session) {
           y = lat,
           size = song_count,
           color = avg_popularity,
-          customdata = Country
+          #customdata = Country
+          text = Country
         ),
         alpha = 0.8
       ) +
@@ -416,7 +474,8 @@ server <- function(input, output, session) {
         legend.box = "horizontal"
       )
     
-    ggplotly(p, tooltip = "customdata") %>%
+    #ggplotly(p, tooltip = "customdata") %>%
+    ggplotly(p, tooltip = "text") %>%
       style(
         hoverlabel = list(
           bgcolor = "white",
@@ -432,6 +491,7 @@ server <- function(input, output, session) {
   })
   
   
+################### Interactive Plot ###################
   
   output$overTimePlot <- renderPlotly({
  
@@ -456,7 +516,8 @@ server <- function(input, output, session) {
         year = floor_date(as.Date(album_release_date), unit = "year") 
       )
     
-    full_plot <- ggplot(filtered, aes(x = year, y = avg_value)) +
+    #full_plot <- 
+      ggplot(filtered, aes(x = year, y = avg_value)) +
       geom_line(color = "#4E79A7", size = 1) + 
       geom_point(color = "#4E79A7", size = 2, stroke = 1, shape = 21, fill = "#4E79A7") +
       labs(
@@ -475,12 +536,7 @@ server <- function(input, output, session) {
       scale_x_date(date_labels = "%Y", date_breaks = "5 years") 
 
     #print(full_plot)
-
-   
   })
-      
-
-
 ########################## Correlation Plot ###########################
   
   output$corrPlot <- renderPlot({
@@ -492,9 +548,36 @@ server <- function(input, output, session) {
              tl.col = "black", tl.srt = 45,
              addCoef.col = "black", number.cex = 0.7)
   })
+  
+
+########################## PCA Plots ###########################
+ output$pcaPlot <- renderPlot({
+    
+    
+    fviz_eig(pca_df,addlabels = TRUE, ylim=c(0,50))
+      })
+  
+  output$fvizPlot <- renderPlot({
+   
+    fviz_pca_var(pca_df,
+                 col.var = "cos2",
+                 gradient.cols = c("red", "blue", "green"),
+                 repel = TRUE) 
+  })
+  
+  output$pcaCorr <- renderPlot({
+    
+    corrplot(varcos, is.corr=FALSE,col = colorRampPalette(c("blue", "white", "red"))(50))
+  })
 ########################## Data Table ###########################
   output$dataTable <- renderDT({
-    filtered <- spotify_data
+    
+    spotify_data_raw<- spotify_data_raw%>%
+      left_join(country_codes_df, by = c("country" = "code"))%>%
+                   mutate(country =country_name)
+ head(spotify_data_raw,2)   
+    filtered <- spotify_data_raw %>%
+      select(-spotify_id, -snapshot_date, -weekly_movement, -daily_movement)
     
     if (input$countryFilter != "All") {
       filtered <- filtered %>% filter(country == input$countryFilter)
@@ -511,6 +594,7 @@ server <- function(input, output, session) {
   
 ############################  Model Server  #######################
   predicted_value <- reactive({
+    
     new_data <- data.frame(
       danceability = input$predDance,
       energy = input$predEnergy,
@@ -545,10 +629,6 @@ server <- function(input, output, session) {
       theme_minimal()
   },height = 600)
   
-  # model_prereqs_met <- reactive({
-  #   req(exists("spotify_data") && is.data.frame(spotify_data))
-  #   all(c("popularity", "predicted_popularity", "is_popular_actual", "predicted_prob_popular") %in% names(spotify_data))
-  # })
   
 ################### Split Data Plot ####################
   output$splitData <- renderPlot({
