@@ -403,7 +403,7 @@ server <- function(input, output, session) {
           y = lat,
           size = song_count,
           color = avg_popularity,
-          #customdata = Country
+
           text = Country
         ),
         alpha = 0.8
