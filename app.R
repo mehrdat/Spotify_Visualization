@@ -18,6 +18,8 @@ library(leaflet)
 library(maps)
 library(tools)
 library(ggbiplot)
+library(rjson)
+
 
 country_codes_df <- data.frame(
   code = c(
@@ -360,16 +362,14 @@ server <- function(input, output, session) {
       ) %>%
       left_join(country_codes_df, by = c("country" = "code"),relationship = "many-to-many") %>%
       rename(name = country_name) %>%  
-      filter(song_count >= 100) %>%  #
-      mutate(
-        name = case_when(
-          name == "United States" ~ "USA",
-          name == "United Kingdom" ~ "UK",
-          name == "Czech Republic" ~ "Czechia",
-          TRUE ~ name
-        )
-      )
-      world_map <- map_data("world")
+      filter(song_count >= 100) 
+    
+    
+    # url <- 'https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json'
+    # counties <- rjson::fromJSON(file=url)
+    # url2<- "https://raw.githubusercontent.com/plotly/datasets/master/fips-unemp-16.csv"
+    # df <- read.csv(url2, colClasses=c(fips="character"))
+    world_map <- map_data("world")
     
     plot_data <- world_map %>%
       group_by(region) %>%
@@ -380,16 +380,13 @@ server <- function(input, output, session) {
       ) %>%
       left_join(country_summary, by = c("region" = "name")) %>%
       mutate(
-        Country = ifelse(
-          is.na(avg_popularity),
-          paste0("<b>", region, "</b><br>No data available"),
-          paste0(
+        Country = paste0(
             "<br>", region,"</b>",
             "<br>Avg Popularity: ", round(avg_popularity, 1),
             "<br>Songs: ", scales::comma(song_count),
             "<br>Country Code: ", country
           )
-        )
+      
       )
     
     p <- ggplot() +
