@@ -387,7 +387,7 @@ server <- function(input, output, session) {
     
     names(spotify_data)
     p <- plot_geo(country_popularity) %>%
-      add_trace(z = ~avg_popularity, color = ~avg_popularity, colors = 'Reds',
+      add_trace(z = ~avg_popularity, color = ~avg_popularity, colors = 'Blues',
                 text = ~country_display_name, locations = ~iso_a3, marker = list(line = l)) %>%
       colorbar(title = 'popularity') %>%
       layout(title = '', geo = g)
