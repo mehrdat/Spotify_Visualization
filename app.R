@@ -19,7 +19,7 @@ library(maps)
 library(tools)
 library(ggbiplot)
 library(rjson)
-
+library(countrycode)
 
 country_codes_df <- data.frame(
   code = c(
