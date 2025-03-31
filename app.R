@@ -18,8 +18,7 @@ library(leaflet)
 library(maps)
 library(tools)
 library(ggbiplot)
-library(rjson)
-library(countrycode)
+
 
 country_codes_df <- data.frame(
   code = c(
@@ -52,7 +51,7 @@ country_codes_df <- data.frame(
     "Dominican Republic", "Guatemala", "Honduras", "El Salvador", "Nicaragua", "Costa Rica", "Panama", "Jamaica", "Trinidad and Tobago", "Guyana",
     "Ecuador", "Bolivia", "Paraguay", "Uruguay", "Suriname", "Barbados"
   )
-)
+)%>% distinct(code, .keep_all = TRUE) 
 
 spotify_data_raw <- read_csv("/Users/Mehr/Desktop/data/spotify_01.csv") %>%
   slice_sample(prop = .1)%>%
@@ -352,95 +351,50 @@ server <- function(input, output, session) {
   })
         
   output$popularityByCountries <- renderPlotly({
-
-    country_summary <- spotify_data %>%
-      group_by(country) %>%
-      summarise(
-        avg_popularity = mean(popularity, na.rm = TRUE),
-        song_count = n(),
-        .groups = 'drop'
+    
+    
+    country_codes_df <- country_codes_df %>%
+      mutate(iso_a3 = countrycode(code, origin = 'iso2c', destination = 'iso3c'))
+    
+    spotify_data <- spotify_data_raw %>%
+      select(popularity, country, album_release_date)%>%
+      left_join(country_codes_df, by = c("country" = "code"))
+    
+    country_popularity <- spotify_data %>%
+      filter(!is.na(iso_a3)) %>% 
+      group_by(iso_a3) %>%       
+      summarise(avg_popularity = mean(popularity, na.rm = TRUE),
+                n_songs = n(), 
+                country_display_name = first(country_name)
       ) %>%
-      left_join(country_codes_df, by = c("country" = "code"),relationship = "many-to-many") %>%
-      rename(name = country_name) %>%  
-      filter(song_count >= 100) 
+      ungroup() # could use .groups = 'drop'
     
     
-    # url <- 'https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json'
-    # counties <- rjson::fromJSON(file=url)
-    # url2<- "https://raw.githubusercontent.com/plotly/datasets/master/fips-unemp-16.csv"
-    # df <- read.csv(url2, colClasses=c(fips="character"))
-    world_map <- map_data("world")
+    g <- list(
+      showframe = FALSE,
+      showcoastlines = FALSE,
+      projection = list(type = 'orthographic'),
+      resolution = '100',
+      showcountries = TRUE,
+      countrycolor = '#d1d1d1',
+      showocean = TRUE,
+      oceancolor = '#c9d2e0',
+      showlakes = TRUE,
+      lakecolor = '#99c0db',
+      showrivers = TRUE,
+      rivercolor = '#99c0db')
     
-    plot_data <- world_map %>%
-      group_by(region) %>%
-      summarise(
-        long = mean(long),
-        lat = mean(lat),
-        .groups = 'drop'
-      ) %>%
-      left_join(country_summary, by = c("region" = "name")) %>%
-      mutate(
-        Country = paste0(
-            "<br>", region,"</b>",
-            "<br>Avg Popularity: ", round(avg_popularity, 1),
-            "<br>Songs: ", scales::comma(song_count),
-            "<br>Country Code: ", country
-          )
-      
-      )
     
-    p <- ggplot() +
-      geom_polygon(
-        data = world_map,
-        aes(x = long, y = lat, group = group),
-        fill = "#f0f0f0", color = "#bdbdbd", linewidth = 0.2
-      ) +
-
-      geom_point(
-        data = filter(plot_data, !is.na(avg_popularity)),
-        aes(
-          x = long, 
-          y = lat,
-          size = song_count,
-          color = avg_popularity,
-
-          text = Country
-        ),
-        alpha = 0.8
-      ) +
-      scale_size_continuous(
-        name = "Number of Songs",
-        range = c(2, 5),
-        breaks = scales::pretty_breaks(n = 5)
-      ) +
-      scale_color_gradientn(
-        name = "Avg Popularity",
-        colors = c("#2c7bb6", "#abd9e9", "#ffffbf", "#fdae61", "#d7191c"),
-        values = scales::rescale(c(0, 30, 50, 70, 90, 100))
-      ) +
-      labs(title = "Popularity by Country") +
-      theme_void() +
-      theme(
-        plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
-        legend.position = "bottom",
-        legend.box = "horizontal"
-      )
-    
-    ggplotly(p, tooltip = "text") %>%
-      style(
-        hoverlabel = list(
-          bgcolor = "white",
-          bordercolor = "black",
-          font = list(size = 14)
-        )
-      ) %>%
-      layout(
-        margin = list(l = 0, r = 0, b = 0, t = 40),
-        hoverlabel = list(align = "left")
-      ) %>%
-      config(displayModeBar = TRUE)
+    names(spotify_data)
+    p <- plot_geo(country_popularity) %>%
+      add_trace(z = ~avg_popularity, color = ~avg_popularity, colors = 'Reds',
+                text = ~country_display_name, locations = ~iso_a3, marker = list(line = l)) %>%
+      colorbar(title = 'popularity') %>%
+      layout(title = '', geo = g)
+    print(p)
   })
-  
+
+
 ################### Interactive Plot ###################
   
   output$overTimePlot <- renderPlotly({
