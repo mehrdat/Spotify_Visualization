@@ -60,15 +60,15 @@ spotify_data_raw <- read_csv("/Users/Mehr/Documents/Semester 4/Visualisation/fin
          country = as.factor(country),
          release_year=year(as.Date(album_release_date)))
 spotify_data<-spotify_data_raw%>%
-  select(-c(tempo,snapshot_date,weekly_movement,daily_movement,daily_rank,spotify_id,name, mode, time_signature))
+  select(-c(tempo,snapshot_date,weekly_movement,daily_movement,daily_rank,spotify_id,name, time_signature))
 
-
-
+str(spotify_data$key)
+summary(spotify_data$key)
 ind_train<-sample(1:nrow(spotify_data),size=0.8*nrow(spotify_data))
 train_data<- spotify_data[ind_train,]
 test_data<-spotify_data[-ind_train,]
 
-rf_model <- randomForest(popularity ~ speechiness+ duration_ms+ danceability+ energy+ liveness+ loudness+valence+ key+acousticness+instrumentalness,
+rf_model <- randomForest(popularity ~ speechiness+ duration_ms+ danceability+ energy+ liveness+ loudness+valence+ key+ acousticness + instrumentalness+mode,
                          data = train_data, 
                          ntree = 30, 
                          min.node.size = 5,
@@ -209,14 +209,18 @@ ui <- dashboardPage(
                               min = 36826, max = 821631 , value = 193301, step = 10),
                   sliderInput("liveness", "Liveness:",
                               min = 0.01, max = .98, value = 0.175, step = 0.01),
+                  
                   sliderInput("key", "Key:",
-                              min = 0.01, max = .98, value = 0.175, step = 0.01),
+                              min = 0, max = 11, value = 5, step = 1),
                   sliderInput("acousticness", "acousticness:",
                               min = 0.01, max = .98, value = 0.175, step = 0.01),
                   sliderInput("instrumentalness", "instrumentalness:",
                               min = 0.01, max = .98, value = 0.175, step = 0.01),
-                  
-                  width = 4
+                  sliderInput("mode", "Mode:",
+                              min = 0, max = 1, value = 1, step =1),
+
+                  width = 4,
+                
                 ),
                 box(
                   title = "Predicted Popularity",
@@ -515,7 +519,8 @@ server <- function(input, output, session) {
       liveness = input$liveness,
       key=input$key,
       acousticness=input$acousticness,
-      instrumentalness=input$instrumentalness
+      instrumentalness=input$instrumentalness,
+      mode=input$mode
     )
     pred <- predict(rf_model, newdata = new_data)
     return(pred)
@@ -523,7 +528,7 @@ server <- function(input, output, session) {
   
   output$predictionOutput <- renderPrint({
     pred <- predicted_value()
-    cat("Predicted Popularity Score:", round(pred, 1), "/ 100")
+    cat("Predicted Popularity Score:", paste(h1(round(pred, 1))), "/ 100")
   })
   
   output$predictionPlot <- renderPlot({
