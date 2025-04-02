@@ -18,7 +18,7 @@ library(leaflet)
 library(maps)
 library(tools)
 library(ggbiplot)
-
+library(countrycode)
 
 country_codes_df <- data.frame(
   code = c(
@@ -53,14 +53,14 @@ country_codes_df <- data.frame(
   )
 )%>% distinct(code, .keep_all = TRUE) 
 
-spotify_data_raw <- read_csv("/Users/Mehr/Desktop/data/spotify_01.csv") %>%
+spotify_data_raw <- read_csv("/Users/Mehr/Documents/Semester 4/Visualisation/final/visualization_final_project/spotify_01.csv") %>%
   slice_sample(prop = .1)%>%
   na.omit() %>%
   mutate(is_explicit = as.factor(is_explicit),
          country = as.factor(country),
          release_year=year(as.Date(album_release_date)))
 spotify_data<-spotify_data_raw%>%
-  select(-c(tempo,snapshot_date,weekly_movement,daily_movement,daily_rank,spotify_id,name, key, mode, time_signature))
+  select(-c(tempo,snapshot_date,weekly_movement,daily_movement,daily_rank,spotify_id,name, mode, time_signature))
 
 
 
@@ -68,7 +68,7 @@ ind_train<-sample(1:nrow(spotify_data),size=0.8*nrow(spotify_data))
 train_data<- spotify_data[ind_train,]
 test_data<-spotify_data[-ind_train,]
 
-rf_model <- randomForest(popularity ~ speechiness+ duration_ms+ danceability+ energy+ liveness+ loudness+valence,
+rf_model <- randomForest(popularity ~ speechiness+ duration_ms+ danceability+ energy+ liveness+ loudness+valence+ key+acousticness+instrumentalness,
                          data = train_data, 
                          ntree = 30, 
                          min.node.size = 5,
@@ -209,6 +209,13 @@ ui <- dashboardPage(
                               min = 36826, max = 821631 , value = 193301, step = 10),
                   sliderInput("liveness", "Liveness:",
                               min = 0.01, max = .98, value = 0.175, step = 0.01),
+                  sliderInput("key", "Key:",
+                              min = 0.01, max = .98, value = 0.175, step = 0.01),
+                  sliderInput("acousticness", "acousticness:",
+                              min = 0.01, max = .98, value = 0.175, step = 0.01),
+                  sliderInput("instrumentalness", "instrumentalness:",
+                              min = 0.01, max = .98, value = 0.175, step = 0.01),
+                  
                   width = 4
                 ),
                 box(
@@ -505,7 +512,10 @@ server <- function(input, output, session) {
       #tempo = input$predTempo,
       speechiness=input$speechiness,
       duration_ms=input$duration_ms,
-      liveness = input$liveness
+      liveness = input$liveness,
+      key=input$key,
+      acousticness=input$acousticness,
+      instrumentalness=input$instrumentalness
     )
     pred <- predict(rf_model, newdata = new_data)
     return(pred)
