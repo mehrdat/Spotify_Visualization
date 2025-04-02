@@ -107,7 +107,7 @@ ui <- dashboardPage(
               ),
               fluidRow(
                 box(
-                  title = "Top 7 Artists by Number of Songs", status = "primary", solidHeader = TRUE,
+                  title = "Top 7 Artists", status = "primary", solidHeader = TRUE,
                   collapsible = TRUE, width = 6,
                   plotOutput("topArtistsPlot")
                 ),
@@ -339,22 +339,23 @@ server <- function(input, output, session) {
     
     top_artists <- spotify_data %>%
       group_by(artists) %>%
-      summarise(count = n(),avg_popularity = mean(popularity, na.rm = TRUE)
+      summarise(count = n(),avg_popularity = mean(popularity,na.rm = TRUE),
+                ind= n()/mean(popularity,na.rm = TRUE)
       ) %>%
-      arrange(desc(count)) %>%
+      arrange(desc(avg_popularity)) %>%
       top_n(7, count)
     
-    ggplot(top_artists, aes(x = count, y = reorder(artists, count), fill = avg_popularity)) +
+    ggplot(top_artists, aes(x = ind, y = reorder(artists, ind), fill = ind)) +
       geom_bar(stat = "identity", show.legend = TRUE) +
       scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Popularity") +
       labs(
-        title = "Top 7 Artists by Count",
+        title = "Song Count / Avg Popularity",
         x = "Count",
         y = "Artist"
       ) +
       theme_minimal() +
       theme(
-        axis.text.y = element_text(angle = -45, hjust = 0.5),
+        axis.text.y = element_text(angle = 45, hjust = 0.5),
         plot.title = element_text(size = 14, hjust = 0.5),
         legend.title = element_text(size = 12),
         legend.key.size = unit(0.5, "cm")
@@ -528,7 +529,7 @@ server <- function(input, output, session) {
   
   output$predictionOutput <- renderPrint({
     pred <- predicted_value()
-    cat("Predicted Popularity Score:", paste(h1(round(pred, 1))), "/ 100")
+    cat("Predicted Popularity Score: ",round(pred, 1), "/ 100",sep="")
   })
   
   output$predictionPlot <- renderPlot({
