@@ -62,7 +62,7 @@ spotify_data_raw <- read_csv("/Users/Mehr/Documents/Semester 4/Visualisation/fin
 spotify_data<-spotify_data_raw%>%
   select(-c(tempo,snapshot_date,weekly_movement,daily_movement,daily_rank,spotify_id,name, time_signature))
 
-str(spotify_data$key)
+str(spotify_data)
 summary(spotify_data$key)
 ind_train<-sample(1:nrow(spotify_data),size=0.8*nrow(spotify_data))
 train_data<- spotify_data[ind_train,]
@@ -539,8 +539,16 @@ server <- function(input, output, session) {
       geom_bar(stat = "identity", fill = "steelblue", width = 0.5) +
       geom_hline(yintercept = mean(spotify_data$popularity, na.rm = TRUE),
                  linetype = "dashed", color = "red") +
+      
       annotate("text", x = 1, y = mean(spotify_data$popularity, na.rm = TRUE) + 2,
                label = "Average Popularity", color = "red") +
+      
+      # geom_hline(yintercept = y = mean(spotify_data%>% filter(country=='Ireland')%>% select(popularity), na.rm = TRUE),
+      #            linetype = "dashed", color = "green") +
+      annotate("text", x = .5, y = mean(spotify_data%>% filter(country=='Ireland')%>% select(popularity), na.rm = TRUE) + 2,
+               label = "Ireland", color = "green") +
+      
+      
       scale_y_continuous(limits = c(0, 100)) +
       labs(title = "Popularity Prediction",
            x = "", y = "Popularity Score") +
