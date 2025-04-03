@@ -555,38 +555,13 @@ server <- function(input, output, session) {
                  linetype = "dashed", color = "purple") +
       annotate("text", x = .53, y = spotify_data%>%summarise(qu1=quantile(popularity, probs = 0.25))%>%pull(qu1)+2,
                label = "First Quantile", color = "purple") +
-      
-      #scale_y_continuous(limits = c(0, 100)) +
+    
       coord_cartesian(ylim = c(40, 100))+
       labs(title = "Popularity Prediction",
            x = "", y = "Popularity Score") +
       theme_minimal()
-  }, height = 800)
+  }, height = 600)
 
-  
-  # output$predictionPlot <- renderPlot({
-  #   pred <- predicted_value()
-  #   plot_data <- data.frame(label = "Predicted", value = pred)
-  #   ggplot(plot_data, aes(x = label, y = value)) +
-  #     geom_bar(stat = "identity", fill = "steelblue", width = 0.5) +
-  #     geom_hline(yintercept = mean(spotify_data$popularity, na.rm = TRUE),
-  #                linetype = "dashed", color = "red") +
-  #     
-  #     annotate("text", x = 1, y = mean(spotify_data$popularity, na.rm = TRUE) + 2,
-  #              label = "Average Popularity", color = "red") +
-  #     
-  #     geom_hline(yintercept = y = mean(spotify_data%>% filter(country=='Ireland')%>% select(popularity), na.rm = TRUE),
-  #                linetype = "dashed", color = "green") +
-  #     annotate("text", x = .5, y = mean(spotify_data%>% filter(country=='Ireland')%>% select(popularity), na.rm = TRUE) + 2,
-  #              label = "Ireland", color = "green") +
-  #     
-  #     
-  #     scale_y_continuous(limits = c(0, 100)) +
-  #     labs(title = "Popularity Prediction",
-  #          x = "", y = "Popularity Score") +
-  #     theme_minimal()
-  # },height = 600)
-  # 
   
 ################### Split Data Plot ####################
   output$splitData <- renderPlot({
