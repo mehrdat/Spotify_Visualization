@@ -53,6 +53,8 @@ country_codes_df <- data.frame(
   )
 )%>% distinct(code, .keep_all = TRUE) 
 
+
+
 spotify_data_raw <- read_csv("/Users/Mehr/Documents/Semester 4/Visualisation/final/visualization_final_project/spotify_01.csv") %>%
   slice_sample(prop = .1)%>%
   na.omit() %>%
@@ -554,17 +556,17 @@ server <- function(input, output, session) {
       annotate("text", x = .5, y = spotify_data%>%filter(country == "IE")%>%summarise(avgp=mean(popularity))%>%pull(avgp)+2,
                label = "Ireland", color = "green") +
       
-      geom_hline(yintercept = spotify_data%>%filter(artists == "Taylor Swift")%>%summarise(avgp=mean(popularity))%>%pull(avgp),
+      geom_hline(yintercept = spotify_data%>%summarise(qu1=quantile(popularity, probs = 0.25))%>%pull(qu1),
                  linetype = "dashed", color = "purple") +
-      annotate("text", x = .5, y = spotify_data%>%filter(artists == "Taylor Swift")%>%summarise(avgp=mean(popularity))%>%pull(avgp)+2,
-               label = "Taylor Swift", color = "purple") +
+      annotate("text", x = .5, y = spotify_data%>%summarise(qu1=quantile(popularity, probs = 0.25))%>%pull(qu1)+2,
+               label = "First Quantile", color = "purple") +
       
       scale_y_continuous(limits = c(0, 100)) +
       labs(title = "Popularity Prediction",
            x = "", y = "Popularity Score") +
       theme_minimal()
   }, height = 600)
-  
+
   
   # output$predictionPlot <- renderPlot({
   #   pred <- predicted_value()
