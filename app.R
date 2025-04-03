@@ -534,11 +534,6 @@ server <- function(input, output, session) {
     cat("Predicted Popularity Score: ",round(pred, 1), "/ 100",sep="")
   })
   
-  #names(spotify_data)
-  #unique(spotify_data$country)
-  #print(mean(spotify_data$popularity, na.rm = TRUE))
-  #spotify_data%>%filter(country == "IE")%>%summarise(avgp=mean(popularity))%>%pull(avgp)
-  
   output$predictionPlot <- renderPlot({
     pred <- predicted_value()
     plot_data <- data.frame(label = "Predicted", value = pred)
@@ -558,14 +553,15 @@ server <- function(input, output, session) {
       
       geom_hline(yintercept = spotify_data%>%summarise(qu1=quantile(popularity, probs = 0.25))%>%pull(qu1),
                  linetype = "dashed", color = "purple") +
-      annotate("text", x = .5, y = spotify_data%>%summarise(qu1=quantile(popularity, probs = 0.25))%>%pull(qu1)+2,
+      annotate("text", x = .53, y = spotify_data%>%summarise(qu1=quantile(popularity, probs = 0.25))%>%pull(qu1)+2,
                label = "First Quantile", color = "purple") +
       
-      scale_y_continuous(limits = c(0, 100)) +
+      #scale_y_continuous(limits = c(0, 100)) +
+      coord_cartesian(ylim = c(40, 100))+
       labs(title = "Popularity Prediction",
            x = "", y = "Popularity Score") +
       theme_minimal()
-  }, height = 600)
+  }, height = 800)
 
   
   # output$predictionPlot <- renderPlot({
