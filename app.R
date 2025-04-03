@@ -556,7 +556,7 @@ server <- function(input, output, session) {
       
       geom_hline(yintercept = spotify_data%>%filter(artists == "Taylor Swift")%>%summarise(avgp=mean(popularity))%>%pull(avgp),
                  linetype = "dashed", color = "purple") +
-      annotate("text", x = 1, y = spotify_data%>%filter(artists == "Taylor Swift")%>%summarise(avgp=mean(popularity))%>%pull(avgp)+2,
+      annotate("text", x = .5, y = spotify_data%>%filter(artists == "Taylor Swift")%>%summarise(avgp=mean(popularity))%>%pull(avgp)+2,
                label = "Taylor Swift", color = "purple") +
       
       scale_y_continuous(limits = c(0, 100)) +
