@@ -19,6 +19,7 @@ library(maps)
 library(tools)
 library(ggbiplot)
 library(countrycode)
+library(factoextra)
 
 country_codes_df <- data.frame(
   code = c(
@@ -55,8 +56,8 @@ country_codes_df <- data.frame(
 
 
 
-spotify_data_raw <- read_csv("/Users/Mehr/Documents/Semester 4/Visualisation/final/visualization_final_project/spotify_01.csv") %>%
-  slice_sample(prop = .1)%>%
+spotify_data_raw <- read_csv("spotify_01.csv") %>%
+  slice_sample(prop = 1)%>%
   na.omit() %>%
   mutate(is_explicit = as.factor(is_explicit),
          country = as.factor(country),
