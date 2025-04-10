@@ -20,6 +20,7 @@ library(tools)
 library(ggbiplot)
 library(countrycode)
 library(factoextra)
+library(scales)
 
 country_codes_df <- data.frame(
   code = c(
@@ -384,7 +385,7 @@ server <- function(input, output, session) {
       ) %>%
       ungroup() # could use .groups = 'drop'
     
-    
+    l <- list(color = toRGB("white"), width = 0.5)
     g <- list(
       showframe = FALSE,
       showcoastlines = FALSE,
@@ -406,7 +407,7 @@ server <- function(input, output, session) {
                 text = ~country_display_name, locations = ~iso_a3, marker = list(line = l)) %>%
       colorbar(title = 'popularity') %>%
       layout(title = '', geo = g)
-    print(p)
+    p
   })
 
 
