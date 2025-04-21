@@ -270,12 +270,23 @@ tabItem(tabName="nps",
             br(),
             sliderInput("nps_score",
                         label = "How was your experience?",
-                        min=1,max =10 ,value =7 ,step=1,with="100%"),
-            tags$div(),
+                        min=1,max =10 ,value =7 ,step=1,width="100%"),
+            tags$div(style="display: flex; justify-content: space-between;",
+                     tags$span("0 (Not at all likely)"),
+                     tags$span("10 (Extremely likely)")),
             br(),
-            textAreaInput(),
-            
-            
+            textAreaInput("nps_comment",
+                          label = "Optional: please provide any recommendation or comments",
+                          value = "",
+                          rows = 3,
+                          width ="100%" ,
+                          placeholder ="What could be better?" ),
+            br(),
+            actionButton("submit_nps",
+                         "Submit",icon = icon("paper-plane"),class="btn_success"),
+            br(),
+            br(),
+            uiOutput("nps_thank_you_message")
           )
         )
           ),
