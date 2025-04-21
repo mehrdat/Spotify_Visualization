@@ -666,7 +666,7 @@ server <- function(input, output, session) {
     new_feedback <- tibble(
     score = score,
     category = nps_category,
-    comment= ifelse(comment="" ,"NA", comment)
+    comment= ifelse(comment="" ,"NA_character_", comment)
     )
     googlesheets4::sheet_append(ss = feedback_ss, data = new_feedback) # writes in google sheet
  
