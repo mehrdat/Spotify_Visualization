@@ -661,7 +661,7 @@ server <- function(input, output, session) {
       score >=9 ~ "promoter",
       score >= 6 ~ "passive",
       score >= 4~ "critic",
-      TRUE ~ "Unknwn"
+      score < 4 ~ "bad"
     )
     new_feedback <- tibble(
     score = score,
