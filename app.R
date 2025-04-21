@@ -653,7 +653,38 @@ server <- function(input, output, session) {
       coord_cartesian(xlim = c(0, 100), ylim = c(0, 100))
   })
   output$nps_thank_you_message <- renderUI(NULL)
-  observeEvent()
+  observeEvent(input$submit_nps,{
+    score<- input$nps_score
+    comment <- trimws(input$nps_comment)
+    
+    nps_category<- case_when(
+      score >=9 ~ "promoter",
+      score >= 6 ~ "passive",
+      score >= 4~ "critic",
+      TRUE ~ "Unknwn"
+    )
+    new_feedback <- tibble(
+    score = score,
+    category = nps_category,
+    comment= ifelse(comment="" ,"NA", comment)
+    )
+    googlesheets4::sheet_append(ss = feedback_ss, data = new_feedback) # writes in google sheet
+ 
+    
+    write_headers <- !file.exists(feedback_file)
+    write_csv(new_feedback, feedback_file, append = TRUE, col_names = write_headers) # writes in local file
+    
+    output$nps_thank_you_message<- renderUI(
+      tags$div(class = "alert alert-success", role = "alert",
+               style="margin-top: 15px;",
+               icon("check-circle"),
+               "Thank you for your feedback!"),
+      
+      
+    )
+    
+  }
+               )
   
   
 }
