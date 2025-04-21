@@ -652,6 +652,9 @@ server <- function(input, output, session) {
       theme_minimal() +
       coord_cartesian(xlim = c(0, 100), ylim = c(0, 100))
   })
+  output$nps_thank_you_message <- renderUI(NULL)
+  observeEvent()
+  
   
 }
 
