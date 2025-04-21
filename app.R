@@ -58,7 +58,7 @@ country_codes_df <- data.frame(
 )%>% distinct(code, .keep_all = TRUE) 
 
 spotify_data_raw <- read_csv("spotify_01.csv") %>%
-  slice_sample(prop = 1)%>%
+  slice_sample(prop = .1)%>%
   na.omit() %>%
   mutate(is_explicit = as.factor(is_explicit),
          country = as.factor(country),
@@ -261,6 +261,26 @@ ui <- dashboardPage(
                 )
             
       ),
+################## NPS ###########
+tabItem(tabName="nps",
+        fluidRow(
+          box(
+            title="FeedBack",
+            p(),
+            br(),
+            sliderInput("nps_score",
+                        label = "How was your experience?",
+                        min=1,max =10 ,value =7 ,step=1,with="100%"),
+            tags$div(),
+            br(),
+            textAreaInput(),
+            
+            
+          )
+        )
+          ),
+
+
       tabItem(tabName = "about",
               fluidRow(
                 box(
