@@ -100,6 +100,7 @@ ui <- dashboardPage(
       menuItem("Static Plot", tabName = "static", icon = icon("chart-pie")),
       menuItem("Model Plots", tabName = "model", icon = icon("cogs")),
       menuItem("Data Table", tabName = "table", icon = icon("table")),
+      menuItem("Feedback / NPS", tabName = "nps", icon = icon("comment-dots")),
       menuItem("About", tabName = "about", icon = icon("info-circle"))
     )
   ),
