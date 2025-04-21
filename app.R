@@ -90,7 +90,7 @@ feedback_ss <- "https://docs.google.com/spreadsheets/d/1TroPoCHRu3LTVHemxOgV7qo5
 
 ############# UI Definition ###############
 ui <- dashboardPage(
-  skin = "green",
+  skin = "blue",
   dashboardHeader(title = "Spotify Data Explorer"),
   dashboardSidebar(
     sidebarMenu(
