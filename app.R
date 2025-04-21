@@ -21,6 +21,8 @@ library(ggbiplot)
 library(countrycode)
 library(factoextra)
 library(scales)
+library(shinyjs)
+library(googlesheets4)
 
 country_codes_df <- data.frame(
   code = c(
@@ -55,8 +57,6 @@ country_codes_df <- data.frame(
   )
 )%>% distinct(code, .keep_all = TRUE) 
 
-
-
 spotify_data_raw <- read_csv("spotify_01.csv") %>%
   slice_sample(prop = 1)%>%
   na.omit() %>%
@@ -83,6 +83,9 @@ print(rf_model)
 varImpPlot(rf_model)
 varImp(rf_model)
 
+feedback_file <- "nps_feedback.csv"
+
+feedback_ss <- "https://docs.google.com/spreadsheets/d/1TroPoCHRu3LTVHemxOgV7qo5VOzfvYPnSu_33M6jpl0/edit?gid=0#gid=0"
 
 
 ############# UI Definition ###############
