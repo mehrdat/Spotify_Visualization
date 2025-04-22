@@ -233,9 +233,9 @@ ui <- dashboardPage(
                 box(
                   title = "Predicted Popularity",
                   verbatimTextOutput("predictionOutput"),
-                  plotOutput("predictionPlot"),
+                  plotOutput("predictionPlot",height = "600px"),
                   width = 8,
-                  height = 20
+                  #height = 20
                 )
               ),
                 tagList(
@@ -397,7 +397,8 @@ server <- function(input, output, session) {
         axis.text.y = element_text(angle = 45, hjust = 0.5),
         plot.title = element_text(size = 14, hjust = 0.5),
         legend.title = element_text(size = 12),
-        legend.key.size = unit(0.5, "cm")
+        legend.key.size = unit(0.5, "cm"),
+        legend.position = "bottom"
       )
   })
         
@@ -557,18 +558,20 @@ server <- function(input, output, session) {
       speechiness=input$speechiness,
       duration_ms=input$duration_ms,
       liveness = input$liveness,
-      key=input$key,
+      key=as.numeric(input$key),
       acousticness=input$acousticness,
       instrumentalness=input$instrumentalness,
-      mode=input$mode
+      mode=as.numeric(input$mode)
     )
     pred <- predict(rf_model, newdata = new_data)
     return(pred)
   })
   
   output$predictionOutput <- renderPrint({
+    req(predicted_value())
     pred <- predicted_value()
     cat("Predicted Popularity Score: ",round(pred, 1), "/ 100",sep="")
+    
   })
   
   output$predictionPlot <- renderPlot({
@@ -576,28 +579,36 @@ server <- function(input, output, session) {
     plot_data <- data.frame(label = "Predicted", value = pred)
     
     ggplot(plot_data, aes(x = label, y = value)) +
-      geom_bar(stat = "identity", fill = "steelblue", width = 0.5) +
+      
+      geom_col(aes(fill = "Predicted"), width = 0.4, show.legend = FALSE)+
+      scale_fill_manual(values = c("Predicted" = "steelblue")) +
       
       geom_hline(yintercept = mean(spotify_data$popularity, na.rm = TRUE),
-                 linetype = "dashed", color = "red") +
-      annotate("text", x = .5, y = mean(spotify_data$popularity, na.rm = TRUE) + 2,
-               label = "Average", color = "red") +
+                 linetype = "dashed", color = "darkred",size=1) +
+      annotate("text", x = 1.3, y = mean(spotify_data$popularity, na.rm = TRUE) ,
+               label =  paste("Overall Avg:", round(mean(spotify_data$popularity, na.rm = TRUE), 1)), color ="darkred", vjust = -0.5, hjust=0, size=4) +
       
       geom_hline(yintercept = spotify_data%>%filter(country == "IE")%>%summarise(avgp=mean(popularity))%>%pull(avgp),
-                 linetype = "dashed", color = "green") +
-      annotate("text", x = .5, y = spotify_data%>%filter(country == "IE")%>%summarise(avgp=mean(popularity))%>%pull(avgp)+2,
-               label = "Ireland", color = "green") +
+                 linetype = "dashed", color = "darkgreen",size = 1) +
+      annotate("text", x = 1.3, y = spotify_data%>%filter(country == "IE")%>%summarise(avgp=mean(popularity))%>%pull(avgp),
+               label = "Ireland",color = "darkgreen", vjust = -0.5, hjust=0, size=4) +
       
       geom_hline(yintercept = spotify_data%>%summarise(qu1=quantile(popularity, probs = 0.25))%>%pull(qu1),
-                 linetype = "dashed", color = "purple") +
-      annotate("text", x = .53, y = spotify_data%>%summarise(qu1=quantile(popularity, probs = 0.25))%>%pull(qu1)+2,
-               label = "First Quantile", color = "purple") +
+                 linetype = "dashed", color = "purple",size = 1) +
+      annotate("text", x =1.3, y = spotify_data%>%summarise(qu1=quantile(popularity, probs = 0.25))%>%pull(qu1),
+               label = "First quantile", color = "purple", vjust = -0.5, hjust=0, size=4) +
     
-      coord_cartesian(ylim = c(40, 100))+
-      labs(title = "Popularity Prediction",
-           x = "", y = "Popularity Score") +
-      theme_minimal()
-  }, height = 600)
+      coord_cartesian(ylim = c(0, 100))+
+      labs(#title = "Popularity Prediction",
+           x = "", y = "Popularity Score (0,100") +
+      theme_minimal()+
+      theme_minimal(base_size = 14) +
+      theme(
+        axis.text.x = element_text(size = 12, face = "bold"),
+        axis.title.y = element_text(size = 12),
+        panel.grid.major.x = element_blank()
+      )
+  }, height = 580)
 
   
 ################### Split Data Plot ####################
@@ -666,7 +677,7 @@ server <- function(input, output, session) {
     new_feedback <- tibble(
     score = score,
     category = nps_category,
-    comment= ifelse(comment="" ,"NA_character_", comment)
+    comment= ifelse(comment=="" ,"NA_character_", comment)
     )
     googlesheets4::sheet_append(ss = feedback_ss, data = new_feedback) # writes in google sheet
  
@@ -682,9 +693,10 @@ server <- function(input, output, session) {
       
       
     )
+    updateSliderInput(session,"nps_score",value=7)
+    updateTextAreaInput(session,"nps_comment",value = "")
     
-  }
-               )
+  })
   
   
 }
