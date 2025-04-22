@@ -34,7 +34,7 @@ country_codes_df <- data.frame(
     "AE", "YE", "SY", "PS", "IL", "BE", "NL", "CH", "SE", "NO",
     "DK", "FI", "PT", "GR", "CZ", "HU", "RO", "BG", "HR", "SK",
     "SI", "LT", "LV", "EE", "IE", "AT", "BA", "MK", "AL", "RS",
-    "XK", "ME", "IS", "AZ", "GE", "AM", "BY", "MD", "PL", "UA",
+    "ME", "IS", "AZ", "GE", "AM", "BY", "MD", "PL", "UA",
     "KZ", "UZ", "KG", "TJ", "TM", "MN", "KP", "HK", "TW", "VN",
     "TH", "MY", "SG", "PH", "ID", "NZ", "CL", "PE", "VE", "CU",
     "DO", "GT", "HN", "SV", "NI", "CR", "PA", "JM", "TT", "GY",
@@ -48,14 +48,14 @@ country_codes_df <- data.frame(
     "Sudan", "Libya", "Tunisia", "Algeria", "Iraq", "Jordan", "Lebanon", "Oman", "Kuwait", "Qatar",
     "United Arab Emirates", "Yemen", "Syria", "Palestine", "Israel", "Belgium", "Netherlands", "Switzerland", "Sweden", "Norway",
     "Denmark", "Finland", "Portugal", "Greece", "Czech Republic", "Hungary", "Romania", "Bulgaria", "Croatia", "Slovakia",
-    "Slovenia", "Lithuania", "Latvia", "Estonia", "Ireland", "Austria", "Bosnia and Herzegovina", "North Macedonia", "Albania", "Serbia",
-    "Kosovo", "Montenegro", "Iceland", "Azerbaijan", "Georgia", "Armenia", "Belarus", "Moldova", "Poland", "Ukraine",
+    "Slovenia", "Lithuania", "Latvia", "Estonia", "Ireland", "Austria", "Bosnia and Herzegovina", "North Macedonia", "Albania", "Serbia", "Montenegro", "Iceland", "Azerbaijan", "Georgia", "Armenia", "Belarus", "Moldova", "Poland", "Ukraine",
     "Kazakhstan", "Uzbekistan", "Kyrgyzstan", "Tajikistan", "Turkmenistan", "Mongolia", "North Korea", "Hong Kong", "Taiwan", "Vietnam",
     "Thailand", "Malaysia", "Singapore", "Philippines", "Indonesia", "New Zealand", "Chile", "Peru", "Venezuela", "Cuba",
     "Dominican Republic", "Guatemala", "Honduras", "El Salvador", "Nicaragua", "Costa Rica", "Panama", "Jamaica", "Trinidad and Tobago", "Guyana",
     "Ecuador", "Bolivia", "Paraguay", "Uruguay", "Suriname", "Barbados"
   )
 )%>% distinct(code, .keep_all = TRUE) 
+#countrycode::custom_dict$iso3c <- c(countrycode::custom_dict$iso3c, XK = "XK")
 
 spotify_data_raw <- read_csv("spotify_01.csv") %>%
   slice_sample(prop = .1)%>%
@@ -437,12 +437,26 @@ server <- function(input, output, session) {
       rivercolor = '#99c0db')
     
     
-    names(spotify_data)
+    #names(spotify_data)
+    
     p <- plot_geo(country_popularity) %>%
-      add_trace(z = ~avg_popularity, color = ~avg_popularity, colors = 'Blues',
-                text = ~country_display_name, locations = ~iso_a3, marker = list(line = l)) %>%
-      colorbar(title = 'popularity') %>%
+      add_trace(
+        z = ~avg_popularity,
+        color = ~avg_popularity,
+        colors = 'Blues',
+        text = ~country_display_name,
+        locations = ~iso_a3,
+        marker = list(line = l),
+        colorbar = list(  # Set colorbar properties HERE
+          title = "popularity",
+          orientation = "h",
+          x = 0.5,
+          y = -0.15,
+          xanchor = "center"
+        )
+      ) %>%
       layout(title = '', geo = g)
+    
     p
   })
 
