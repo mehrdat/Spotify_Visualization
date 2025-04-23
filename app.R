@@ -107,23 +107,23 @@ ui <- dashboardPage(
   dashboardBody(
     tags$head(
       tags$style(HTML("
-      
+       body, .sidebar-menu > li > a, .main-header .logo, .main-header .navbar {
+        font-family: 'Inter', 'Roboto', 'Arial', sans-serif !important;
+      }
       /* Sidebar background */
       .skin-blue .main-sidebar {
-        background-color: #ffffff ;
+        background-color: #ffffff !important;
         box-shadow: 2px 0 8px rgba(0,0,0,0.04);
       }
-      
       /* Sidebar menu text */
       .skin-blue .sidebar-menu > li > a {
-        color: #222831;
+        color: #222831 !important;
         font-weight: 500;
         font-size: 16px;
         border-radius: 6px;
         margin: 4px 8px;
         transition: background 0.2s, color 0.2s;
       }
-      
       /* Sidebar menu item hover */
       .skin-blue .sidebar-menu > li > a:hover, 
       .skin-blue .sidebar-menu > li.active > a {
@@ -131,24 +131,20 @@ ui <- dashboardPage(
         color: #1976d2 !important;
         box-shadow: 0 2px 8px rgba(25,118,210,0.08);
       }
-      
       /* Body background */
       .content-wrapper, .right-side {
         background-color: #f7f9fa !important;
       }
-      
       /* Header */
       .skin-blue .main-header .navbar {
         background-color: #1976d2 !important;
         color: #fff !important;
         box-shadow: 0 2px 8px rgba(25,118,210,0.08);
       }
-      
       /* Remove sidebar border */
       .skin-blue .main-sidebar {
         border-right: none;
       }
-      
       /* Sidebar logo/title */
       .skin-blue .main-header .logo {
         background-color: #1565c0 !important;
@@ -156,6 +152,73 @@ ui <- dashboardPage(
         font-size: 22px;
         font-weight: bold;
         letter-spacing: 1px;
+      }
+      /* Modern Box Styling */
+      .box.box-primary {
+        border-top: 3px solid #1976d2;  /* Primary Accent Color */
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+        border-radius: 8px;
+      }
+      .box.box-primary>.box-header {
+        background-color: #ffffff;
+        color: #222831;
+        border-bottom: 1px solid #e0e0e0;
+        font-size: 18px;
+        font-weight: 600;
+        padding: 12px 16px;
+        border-radius: 8px 8px 0 0;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      }
+      .box.box-primary>.box-header>.box-title {
+        font-weight: 600;
+        font-size: 18px;
+        color: #37474f; /* Darker Gray Title */
+      }
+      /* Modern Value Box Styling */
+      .small-box {
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+        transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+      }
+      .small-box:hover {
+        box-shadow: 0 7px 14px rgba(0,0,0,0.25), 0 5px 5px rgba(0,0,0,0.22);
+      }
+      .small-box .inner {
+        padding: 15px;
+      }
+      .small-box .icon {
+        color: rgba(0,0,0,0.15);
+      }
+      .small-box h3, .small-box p {
+        font-weight: 600;
+        color: #37474f;  /* Darker Gray Title */
+      }
+      .small-box .icon i {
+        font-size: 70px;
+      }
+      /* Modern Input Styling */
+      .selectize-input, .form-control {
+        border-radius: 6px !important;
+        border: 1px solid #ced4da !important;
+        box-shadow: none !important;
+      }
+      .selectize-dropdown {
+        border-radius: 6px !important;
+        border: 1px solid #ced4da !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      }
+      .slider-track {
+        background: #e3f2fd !important; /* Light Blue */
+        border-radius: 6px !important;
+      }
+      .slider-handle {
+        background: #1976d2 !important; /* Primary Blue */
+        border-radius: 50% !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      }
+      .irs--shiny .irs-single, .irs--shiny .irs-from, .irs--shiny .irs-to {
+        background: #1976d2 !important;
+        color: white !important;
       }
     "))
     )
