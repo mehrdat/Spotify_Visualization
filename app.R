@@ -781,18 +781,24 @@ server <- function(input, output, session) {
     test_data$pred <- predict(rf_model, newdata = test_data)
     rmse_val<-round(rmse(test_data$popularity, test_data$pred), 2)
     r2_val<-round(cor(test_data$popularity, test_data$pred)^2, 3)
+    
 
     ggplot(test_data, aes(x = popularity, y = pred)) +
       geom_point(alpha = 0.5, color = "darkblue") +
       geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
+      geom_smooth(method = "lm", se = FALSE, color = "orange") +
+      
       labs(
-        title = paste("Actual vs. Predicted Popularity (RMSE:", rmse_val, ", R²:", r2_val, ")"),
+        #title = paste("Actual vs. Predicted Popularity (RMSE:", rmse_val, ", R²:", r2_val, ")"),
+        subtitle = paste("RMSE:", rmse_val, "  |  R²:", r2_val),
         x = "Actual Popularity",
         y = "Predicted Popularity"
       ) +
-      theme_minimal() +
-      coord_cartesian(xlim = c(0, 100), ylim = c(0, 100))
+      theme_minimal(base_size = 15) +
+      coord_fixed(ratio=1, xlim = c(0, 100), ylim = c(0, 100))
   })
+  
+  ############# Thank you #############
   output$nps_thank_you_message <- renderUI(NULL)
   observeEvent(input$submit_nps,{
     score<- input$nps_score
