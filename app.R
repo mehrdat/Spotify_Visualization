@@ -55,7 +55,7 @@ country_codes_df <- data.frame(
     "Ecuador", "Bolivia", "Paraguay", "Uruguay", "Suriname", "Barbados"
   )
 )%>% distinct(code, .keep_all = TRUE) 
-#countrycode::custom_dict$iso3c <- c(countrycode::custom_dict$iso3c, XK = "XK")
+
 
 spotify_data_raw <- read_csv("spotify_01.csv") %>%
   slice_sample(prop = .1)%>%
@@ -105,7 +105,64 @@ ui <- dashboardPage(
     )
   ),
   dashboardBody(
-    #tags$head(tags$style(HTML(".info-box-content { white-space: normal; }"))),
+    tags$head(
+      tags$style(HTML("
+      
+      /* Sidebar background */
+      .skin-blue .main-sidebar {
+        background-color: #ffffff ;
+        box-shadow: 2px 0 8px rgba(0,0,0,0.04);
+      }
+      
+      /* Sidebar menu text */
+      .skin-blue .sidebar-menu > li > a {
+        color: #222831;
+        font-weight: 500;
+        font-size: 16px;
+        border-radius: 6px;
+        margin: 4px 8px;
+        transition: background 0.2s, color 0.2s;
+      }
+      
+      /* Sidebar menu item hover */
+      .skin-blue .sidebar-menu > li > a:hover, 
+      .skin-blue .sidebar-menu > li.active > a {
+        background-color: #e3f2fd !important;
+        color: #1976d2 !important;
+        box-shadow: 0 2px 8px rgba(25,118,210,0.08);
+      }
+      
+      /* Body background */
+      .content-wrapper, .right-side {
+        background-color: #f7f9fa !important;
+      }
+      
+      /* Header */
+      .skin-blue .main-header .navbar {
+        background-color: #1976d2 !important;
+        color: #fff !important;
+        box-shadow: 0 2px 8px rgba(25,118,210,0.08);
+      }
+      
+      /* Remove sidebar border */
+      .skin-blue .main-sidebar {
+        border-right: none;
+      }
+      
+      /* Sidebar logo/title */
+      .skin-blue .main-header .logo {
+        background-color: #1565c0 !important;
+        color: #fff !important;
+        font-size: 22px;
+        font-weight: bold;
+        letter-spacing: 1px;
+      }
+    "))
+    )
+      
+      #.info-box-content { white-space: normal; }")))
+    
+    ,
     tabItems(
       tabItem(tabName = "main",
               fluidRow(
@@ -403,8 +460,6 @@ server <- function(input, output, session) {
   })
         
   output$popularityByCountries <- renderPlotly({
-    
-    
     country_codes_df <- country_codes_df %>%
       mutate(iso_a3 = countrycode(code, origin = 'iso2c', destination = 'iso3c'))
     
@@ -437,8 +492,6 @@ server <- function(input, output, session) {
       rivercolor = '#99c0db')
     
     
-    #names(spotify_data)
-    
     p <- plot_geo(country_popularity) %>%
       add_trace(
         z = ~avg_popularity,
@@ -447,12 +500,12 @@ server <- function(input, output, session) {
         text = ~country_display_name,
         locations = ~iso_a3,
         marker = list(line = l),
-        colorbar = list(  # Set colorbar properties HERE
+        colorbar = list(
           title = "popularity",
           orientation = "h",
           x = 0.5,
           y = -0.15,
-          xanchor = "center"
+          xanchor = "right"
         )
       ) %>%
       layout(title = '', geo = g)
