@@ -568,7 +568,7 @@ server <- function(input, output, session) {
           orientation = "h",
           x = 0.5,
           y = -0.15,
-          xanchor = "right"
+          xanchor = "center"
         )
       ) %>%
       layout(title = '', geo = g)
@@ -799,6 +799,16 @@ server <- function(input, output, session) {
   })
   
   ############# Thank you #############
+  
+  tryCatch({
+    gs4_auth(path = Sys.getenv("GOOGLE_JSON_KEY")) 
+    message("Googlesheets authentication successful.")
+  }, error = function(e) {
+    message("Googlesheets authentication FAILED: ", e$message)
+  
+  })
+  
+  
   output$nps_thank_you_message <- renderUI(NULL)
   observeEvent(input$submit_nps,{
     score<- input$nps_score
@@ -815,11 +825,28 @@ server <- function(input, output, session) {
     category = nps_category,
     comment= ifelse(comment=="" ,"NA_character_", comment)
     )
-    googlesheets4::sheet_append(ss = feedback_ss, data = new_feedback) # writes in google sheet
- 
     
-    write_headers <- !file.exists(feedback_file)
-    write_csv(new_feedback, feedback_file, append = TRUE, col_names = write_headers) # writes in local file
+    feedback_success <- FALSE 
+    tryCatch({
+      googlesheets4::sheet_append(ss = feedback_ss, data = new_feedback) # writes in google sheet
+      message("Feedback successfully written to google sheet!")
+      feedback_success <- TRUE 
+    }, error=function(e){
+     
+      message("ERROR in writing to googlesheet: ", e$message)
+      output$nps_thank_you_message <- renderUI({
+        tags$div(class = "alert alert-danger", role = "alert",
+                 style = "margin-top: 15px;",
+                 icon("exclamation-triangle"),
+                 "Error: Could not save feedback. Please try again later or contact support."
+      )})
+    }
+    )
+    
+      if (feedback_success){
+    
+    #write_headers <- !file.exists(feedback_file)
+    #write_csv(new_feedback, feedback_file, append = TRUE, col_names = write_headers) # writes in local file
     
     output$nps_thank_you_message<- renderUI(
       tags$div(class = "alert alert-success", role = "alert",
@@ -831,7 +858,7 @@ server <- function(input, output, session) {
     )
     updateSliderInput(session,"nps_score",value=7)
     updateTextAreaInput(session,"nps_comment",value = "")
-    
+      }# if ends here
   })
   
   
