@@ -839,6 +839,9 @@ server <- function(input, output, session) {
   ############# Thank you #############
   
   tryCatch({
+    if (!file.exists("google_key.json")) {
+      stop("google_key.json not found in the application directory.")
+    }
     gs4_auth(path="google_key.json")
     message("Googlesheets authentication successful.")
   }, error = function(e) {
@@ -852,7 +855,7 @@ server <- function(input, output, session) {
   
   observeEvent(input$submit_nps,{
     
-    req(auth_successful, cancelOutput = TRUE) 
+    #req(auth_successful, cancelOutput = TRUE) 
     
     score<- input$nps_score
     comment <- trimws(input$nps_comment)
