@@ -384,32 +384,70 @@ ui <- dashboardPage(
 ################## NPS ###########
 tabItem(tabName="nps",
         fluidRow(
-          box(
-            title="FeedBack",
-            p(),
-            br(),
-            sliderInput("nps_score",
-                        label = "How was your experience?",
-                        min=1,max =10 ,value =7 ,step=1,width="100%"),
-            tags$div(style="display: flex; justify-content: space-between;",
-                     tags$span("0 (Not at all likely)"),
-                     tags$span("10 (Extremely likely)")),
-            br(),
-            textAreaInput("nps_comment",
-                          label = "Optional: please provide any recommendation or comments",
-                          value = "",
-                          rows = 3,
-                          width ="100%" ,
-                          placeholder ="What could be better?" ),
-            br(),
-            actionButton("submit_nps",
-                         "Submit",icon = icon("paper-plane"),class="btn_success"),
-            br(),
-            br(),
-            uiOutput("nps_thank_you_message")
-          )
-        )
-          ),
+            box(
+              title = "Feedback Submission", status = "primary", solidHeader = TRUE, width = 6, # Adjust width
+              
+              p("Help us improve! How likely are you to recommend this app?"),
+              br(),
+              sliderInput("nps_score",
+                          label = "Likelihood to Recommend (0=Not Likely, 10=Very Likely):",
+                          min = 0, max = 10, value = 7, step = 1, width = '100%'),
+              # Removed the extra label div as slider label is descriptive
+              br(),
+              textAreaInput("nps_comment",
+                            label = "Optional: Please provide any comments or suggestions:",
+                            value = "",
+                            rows = 3,
+                            width = '100%',
+                            placeholder = "What did you like? What could be improved?"),
+              br(),
+              actionButton("submit_nps", "Submit Feedback", icon = icon("paper-plane"), class = "btn-success"),
+              br(), br(),
+
+              uiOutput("nps_thank_you_message")
+            ),
+            
+
+          ), 
+          
+
+
+        ), 
+  
+
+        #   box(
+        #     title="FeedBack",
+        #     p(),
+        #     br(),
+        #     sliderInput("nps_score",
+        #                 label = "How was your experience?",
+        #                 min=1,max =10 ,value =7 ,step=1,width="100%"),
+        #     tags$div(style="display: flex; justify-content: space-between;",
+        #              tags$span("0 (Not at all likely)"),
+        #              tags$span("10 (Extremely likely)")),
+        #     br(),
+        #     textAreaInput("nps_comment",
+        #                   label = "Optional: please provide any recommendation or comments",
+        #                   value = "",
+        #                   rows = 3,
+        #                   width ="100%" ,
+        #                   placeholder ="What could be better?" ),
+        #     br(),
+        #     actionButton("submit_nps",
+        #                  "Submit",icon = icon("paper-plane"),class="btn_success"),
+        #     br(),
+        #     br(),
+        #     uiOutput("nps_thank_you_message")
+        #   ),
+        #   
+        #   # box(
+        #   #   title = "npsplot",
+        #   #   
+        #   # )
+        #   
+        # )
+        #   
+        #) ,
 
 
       tabItem(tabName = "about",
@@ -801,7 +839,7 @@ server <- function(input, output, session) {
   ############# Thank you #############
   
   tryCatch({
-    gs4_auth(path = Sys.getenv("GOOGLE_JSON_KEY")) 
+    gs4_auth(path="google_key.json")
     message("Googlesheets authentication successful.")
   }, error = function(e) {
     message("Googlesheets authentication FAILED: ", e$message)
@@ -810,23 +848,31 @@ server <- function(input, output, session) {
   
   
   output$nps_thank_you_message <- renderUI(NULL)
+  
+  
   observeEvent(input$submit_nps,{
+    
+    req(auth_successful, cancelOutput = TRUE) 
+    
     score<- input$nps_score
     comment <- trimws(input$nps_comment)
+    timestamp <- Sys.time() 
     
     nps_category<- case_when(
       score >=9 ~ "promoter",
-      score >= 6 ~ "passive",
-      score >= 4~ "critic",
-      score < 4 ~ "bad"
+      score >= 7 ~ "passive",
+      score >= 6 ~ "Detractor",
+      TRUE ~ "Unknown"
     )
     new_feedback <- tibble(
+    timestamp = as.character(timestamp),
     score = score,
     category = nps_category,
-    comment= ifelse(comment=="" ,"NA_character_", comment)
+    comment= ifelse(comment=="" ,NA_character_, comment)
     )
     
-    feedback_success <- FALSE 
+    feedback_success <- FALSE
+    
     tryCatch({
       googlesheets4::sheet_append(ss = feedback_ss, data = new_feedback) # writes in google sheet
       message("Feedback successfully written to google sheet!")
@@ -838,7 +884,7 @@ server <- function(input, output, session) {
         tags$div(class = "alert alert-danger", role = "alert",
                  style = "margin-top: 15px;",
                  icon("exclamation-triangle"),
-                 "Error: Could not save feedback. Please try again later or contact support."
+                 "Error: Could not save feedback."
       )})
     }
     )

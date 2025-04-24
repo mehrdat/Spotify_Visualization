@@ -5,7 +5,7 @@ account: cy21r8-mehrdad-lashgari
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 14595851
-bundleId: 10166748
+bundleId: 10168184
 url: https://cy21r8-mehrdad-lashgari.shinyapps.io/spotify_visualization/
 version: 1
 asMultiple: FALSE
