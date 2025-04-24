@@ -38,8 +38,7 @@ country_codes_df <- data.frame(
     "KZ", "UZ", "KG", "TJ", "TM", "MN", "KP", "HK", "TW", "VN",
     "TH", "MY", "SG", "PH", "ID", "NZ", "CL", "PE", "VE", "CU",
     "DO", "GT", "HN", "SV", "NI", "CR", "PA", "JM", "TT", "GY",
-    "EC", "BO", "PY", "UY", "SR", "BB"
-  ),
+    "EC", "BO", "PY", "UY", "SR", "BB"),
   country_name =c(
     "United States", "Canada", "United Kingdom", "Germany", "France", "Australia", "Japan", "Brazil", "Mexico", "India",
     "Russia", "China", "South Africa", "Nigeria", "Egypt", "Indonesia", "Pakistan", "Bangladesh", "Turkey", "Iran",
@@ -56,18 +55,18 @@ country_codes_df <- data.frame(
   )
 )%>% distinct(code, .keep_all = TRUE) 
 
-
 spotify_data_raw <- read_csv("spotify_01.csv") %>%
   slice_sample(prop = .1)%>%
   na.omit() %>%
   mutate(is_explicit = as.factor(is_explicit),
          country = as.factor(country),
          release_year=year(as.Date(album_release_date)))
+
 spotify_data<-spotify_data_raw%>%
   select(-c(tempo,snapshot_date,weekly_movement,daily_movement,daily_rank,spotify_id,name, time_signature))
 
-str(spotify_data)
-summary(spotify_data$key)
+# str(spotify_data)
+# summary(spotify_data$key)
 ind_train<-sample(1:nrow(spotify_data),size=0.8*nrow(spotify_data))
 train_data<- spotify_data[ind_train,]
 test_data<-spotify_data[-ind_train,]
@@ -79,14 +78,13 @@ rf_model <- randomForest(popularity ~ speechiness+ duration_ms+ danceability+ en
                          mtry = 3,
                          num.threads = parallel::detectCores() - 1,
                          verbose = TRUE  )
-print(rf_model)
-varImpPlot(rf_model)
-varImp(rf_model)
+# print(rf_model)
+# varImpPlot(rf_model)
+# varImp(rf_model)
 
 feedback_file <- "nps_feedback.csv"
 
 feedback_ss <- "https://docs.google.com/spreadsheets/d/1TroPoCHRu3LTVHemxOgV7qo5VOzfvYPnSu_33M6jpl0/edit?gid=0#gid=0"
-
 
 ############# UI Definition ###############
 ui <- dashboardPage(
@@ -222,9 +220,6 @@ ui <- dashboardPage(
       }
     "))
     )
-      
-      #.info-box-content { white-space: normal; }")))
-    
     ,
     tabItems(
       tabItem(tabName = "main",
@@ -279,9 +274,7 @@ ui <- dashboardPage(
                   title = "Principal Component Analysis: Principals", status = "primary", solidHeader = TRUE,
                   collapsible = TRUE, width = 6,
                   plotOutput("pcaPlot")
-                )
-                
-                ),
+                )),
                 fluidRow(
                   
                   box(
@@ -294,8 +287,6 @@ ui <- dashboardPage(
                     collapsible = TRUE, width = 6,
                     plotOutput("pcaCorr")
                   )
-                
-
               )
       ),
 ####################### Data Table Tab ########################
@@ -330,7 +321,6 @@ ui <- dashboardPage(
                               min = -31.0, max = 3.24, value = -6.5, step = 0.1),
                   sliderInput("predValence", "Valence:", 
                               min = 0.01, max = 1, value = 0.53, step = 0.01),
-
                   sliderInput("speechiness", "Speechiness:",
                               min = 0.02, max = .93, value = 0.09, step = 0.01),
                   sliderInput("duration_ms", "duration_ms:",
@@ -346,7 +336,6 @@ ui <- dashboardPage(
                               min = 0.01, max = .98, value = 0.175, step = 0.01),
                   sliderInput("mode", "Mode:",
                               min = 0, max = 1, value = 1, step =1),
-
                   width = 4,
                 
                 ),
@@ -379,7 +368,6 @@ ui <- dashboardPage(
                     )
                   )
                 )
-            
       ),
 ################## NPS ###########
 tabItem(tabName="nps",
@@ -406,49 +394,8 @@ tabItem(tabName="nps",
 
               uiOutput("nps_thank_you_message")
             ),
-            
-
           ), 
-          
-
-
         ), 
-  
-
-        #   box(
-        #     title="FeedBack",
-        #     p(),
-        #     br(),
-        #     sliderInput("nps_score",
-        #                 label = "How was your experience?",
-        #                 min=1,max =10 ,value =7 ,step=1,width="100%"),
-        #     tags$div(style="display: flex; justify-content: space-between;",
-        #              tags$span("0 (Not at all likely)"),
-        #              tags$span("10 (Extremely likely)")),
-        #     br(),
-        #     textAreaInput("nps_comment",
-        #                   label = "Optional: please provide any recommendation or comments",
-        #                   value = "",
-        #                   rows = 3,
-        #                   width ="100%" ,
-        #                   placeholder ="What could be better?" ),
-        #     br(),
-        #     actionButton("submit_nps",
-        #                  "Submit",icon = icon("paper-plane"),class="btn_success"),
-        #     br(),
-        #     br(),
-        #     uiOutput("nps_thank_you_message")
-        #   ),
-        #   
-        #   # box(
-        #   #   title = "npsplot",
-        #   #   
-        #   # )
-        #   
-        # )
-        #   
-        #) ,
-
 
       tabItem(tabName = "about",
               fluidRow(
@@ -496,7 +443,6 @@ server <- function(input, output, session) {
   varcos<-var$cos2
   var$cor
   
-
   output$totalSongsBox <- renderValueBox({
     total_songs <- nrow(spotify_data)
     valueBox(
@@ -592,7 +538,6 @@ server <- function(input, output, session) {
       showrivers = TRUE,
       rivercolor = '#99c0db')
     
-    
     p <- plot_geo(country_popularity) %>%
       add_trace(
         z = ~avg_popularity,
@@ -613,7 +558,6 @@ server <- function(input, output, session) {
     
     p
   })
-
 
 ################### Interactive Plot ###################
   
@@ -671,10 +615,8 @@ server <- function(input, output, session) {
              addCoef.col = "black", number.cex = 0.7)
   })
   
-
 ########################## PCA Plots ###########################
  output$pcaPlot <- renderPlot({
-    
     
     fviz_eig(pca_df,addlabels = TRUE, ylim=c(0,50))
       })
@@ -778,13 +720,11 @@ server <- function(input, output, session) {
       )
   }, height = 580)
 
-  
 ################### Split Data Plot ####################
   output$splitData <- renderPlot({
     
     train_data$set<-"train"
     test_data$set<-"test"
-    
 
     combined_data<-rbind(train_data,test_data)
     
@@ -799,12 +739,10 @@ server <- function(input, output, session) {
 ############## Importance Plot ####################
   output$featureImportancePlot <- renderPlot({
     
-
     importance_df <- as.data.frame(varImp(rf_model)) # Mean decrease in accuracy
     colnames(importance_df) <- c("Importance")
     importance_df$Feature <- rownames(importance_df)
     
-
     importance_df <- importance_df %>%
       arrange(desc(Importance))
     
@@ -820,14 +758,12 @@ server <- function(input, output, session) {
     rmse_val<-round(rmse(test_data$popularity, test_data$pred), 2)
     r2_val<-round(cor(test_data$popularity, test_data$pred)^2, 3)
     
-
     ggplot(test_data, aes(x = popularity, y = pred)) +
       geom_point(alpha = 0.5, color = "darkblue") +
       geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
       geom_smooth(method = "lm", se = FALSE, color = "orange") +
       
       labs(
-        #title = paste("Actual vs. Predicted Popularity (RMSE:", rmse_val, ", R²:", r2_val, ")"),
         subtitle = paste("RMSE:", rmse_val, "  |  R²:", r2_val),
         x = "Actual Popularity",
         y = "Predicted Popularity"
@@ -851,11 +787,8 @@ server <- function(input, output, session) {
   
   
   output$nps_thank_you_message <- renderUI(NULL)
-  
-  
+
   observeEvent(input$submit_nps,{
-    
-    #req(auth_successful, cancelOutput = TRUE) 
     
     score<- input$nps_score
     comment <- trimws(input$nps_comment)
@@ -873,7 +806,6 @@ server <- function(input, output, session) {
     category = nps_category,
     comment= ifelse(comment=="" ,NA_character_, comment)
     )
-    
     feedback_success <- FALSE
     
     tryCatch({
@@ -891,7 +823,6 @@ server <- function(input, output, session) {
       )})
     }
     )
-    
       if (feedback_success){
     
     #write_headers <- !file.exists(feedback_file)
@@ -903,14 +834,11 @@ server <- function(input, output, session) {
                icon("check-circle"),
                "Thank you for your feedback!"),
       
-      
     )
     updateSliderInput(session,"nps_score",value=7)
     updateTextAreaInput(session,"nps_comment",value = "")
       }# if ends here
   })
-  
-  
 }
 
 shinyApp(ui = ui, server = server)
