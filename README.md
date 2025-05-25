@@ -17,15 +17,15 @@ An interactive R Shiny dashboard to explore trends, features, and predict the po
 *(Here, you'll add your screenshots. Make sure to upload them to your GitHub repo, perhaps in an `images` folder, and then link them. Below are examples of how to link them.)*
 
 **Example: Main Dashboard**
-![Main Dashboard](images/main_dashboard_screenshot.png)
+![Main Dashboard](images/first_page.png)
 *(Replace `images/main_dashboard_screenshot.png` with the actual path to your image)*
 
 **Example: Model Prediction Plot**
-![Model Prediction](images/model_plot_screenshot.png)
+![Model Prediction](images/interactive.png)
 *(Replace `images/model_plot_screenshot.png` with the actual path to your image)*
 
 **Example: Popularity by Country Map**
-![Country Map](images/country_map_screenshot.png)
+![Country Map](images/model.png)
 *(Replace `images/country_map_screenshot.png` with the actual path to your image)*
 
 ## 📖 About The Project
