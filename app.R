@@ -14,7 +14,7 @@ library(readr)
 library(tidyr)
 library(Metrics)
 library(caret)
-library(leaflet)
+#library(leaflet)
 library(maps)
 library(tools)
 library(ggbiplot)
@@ -56,7 +56,7 @@ country_codes_df <- data.frame(
 )%>% distinct(code, .keep_all = TRUE) 
 
 spotify_data_raw <- read_csv("spotify_01.csv") %>%
-  slice_sample(prop = .1)%>%
+  slice_sample(prop = 1)%>%
   na.omit() %>%
   mutate(is_explicit = as.factor(is_explicit),
          country = as.factor(country),

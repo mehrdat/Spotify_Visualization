@@ -1,0 +1,13 @@
+name: Spotify
+title: Spotify
+username: cy21r8-mehrdad-lashgari
+account: cy21r8-mehrdad-lashgari
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 14611879
+bundleId: 10175050
+url: https://cy21r8-mehrdad-lashgari.shinyapps.io/Spotify/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .gitattributes|LICENSE|nps_feedback.csv|Project Summary.docx
