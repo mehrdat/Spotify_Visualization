@@ -641,7 +641,7 @@ server <- function(input, output, session) {
     spotify_data_raw<- spotify_data_raw%>%
       left_join(country_codes_df, by = c("country" = "code"))%>%
                    mutate(country =country_name)
- head(spotify_data_raw,2)   
+ #head(spotify_data_raw,2)   
     filtered <- spotify_data_raw %>%
       select(-spotify_id, -snapshot_date, -weekly_movement, -daily_movement)
     
@@ -679,8 +679,9 @@ server <- function(input, output, session) {
     return(pred)
   })
   
+  # text above the plot. 
   output$predictionOutput <- renderPrint({
-    req(predicted_value())
+    req(predicted_value()) # this means this variable REQUIERED. 
     pred <- predicted_value()
     cat("Predicted Popularity Score: ",round(pred, 1), "/ 100",sep="")
     
@@ -748,6 +749,7 @@ server <- function(input, output, session) {
     importance_df <- importance_df %>%
       arrange(desc(Importance))
     
+    #reorder is puzzle here. 
     ggplot(importance_df, aes(x = reorder(Feature, Importance), y = Importance)) +
       geom_bar(stat = "identity", fill = "skyblue") +
       coord_flip() +
@@ -758,6 +760,8 @@ server <- function(input, output, session) {
   output$predActualPlot<-renderPlot({
     test_data$pred <- predict(rf_model, newdata = test_data)
     rmse_val<-round(rmse(test_data$popularity, test_data$pred), 2)
+    
+    # i did cor^2 to lear more about R2
     r2_val<-round(cor(test_data$popularity, test_data$pred)^2, 3)
     
     ggplot(test_data, aes(x = popularity, y = pred)) +
@@ -776,6 +780,7 @@ server <- function(input, output, session) {
   
   ############# Thank you #############
   
+  # got from AI, 
   tryCatch({
     if (!file.exists("google_key.json")) {
       stop("google_key.json not found in the application directory.")
