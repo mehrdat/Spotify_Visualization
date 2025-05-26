@@ -369,7 +369,7 @@ ui <- dashboardPage(
                   )
                 )
       ),
-################## NPS ###########
+########################## NPS #########################
 tabItem(tabName="nps",
         fluidRow(
             box(
@@ -603,6 +603,8 @@ server <- function(input, output, session) {
 
     #print(full_plot)
   })
+  
+############################ Static Plots #############################
 ########################## Correlation Plot ###########################
   
   output$corrPlot <- renderPlot({
